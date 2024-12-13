@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jukebox Jury Results</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        margin: 0;
+        padding: 0;
+        background-color: #121212;
+        color: #ffffff;
+      }
+
+      header {
+        background-color: #1f1f1f;
+        color: #ffffff;
+        padding: 20px 10px;
+        text-align: center;
+        border-bottom: 2px solid #333333;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 20px;
+        background: #1e1e1e;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      }
+
+      h1,
+      h2,
+      h3 {
+        color: #ffa726;
+      }
+
+      .panelist {
+        margin-bottom: 30px;
+      }
+
+      .panelist h2 {
+        border-bottom: 2px solid #ffa726;
+        padding-bottom: 5px;
+      }
+
+      .song {
+        margin: 10px 0;
+      }
+
+      .song a {
+        color: #42a5f5;
+        text-decoration: none;
+      }
+
+      .song a:hover {
+        text-decoration: underline;
+      }
+
+      .reviews {
+        margin-top: 20px;
+      }
+
+      .review {
+        border-top: 1px solid #333333;
+        padding-top: 10px;
+        margin-top: 10px;
+      }
+
+      .review:first-child {
+        border-top: none;
+        padding-top: 0;
+        margin-top: 0;
+      }
+
+      footer {
+        text-align: center;
+        margin-top: 30px;
+        padding: 10px;
+        font-size: 0.9em;
+        color: #888888;
+        background-color: #1f1f1f;
+        border-top: 2px solid #333333;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Jukebox Jury Results</h1>
+    </header>
+
+    <div class="container">
+      {{- range . }}
+      <div class="panelist">
+        <h2>{{ .Name }}</h2>
+        <div class="song">
+          <p>
+            <strong>Song URL:</strong>
+            <a href="{{ .Song.URL }}" target="_blank">{{ .Song.URL }}</a>
+          </p>
+          <p><strong>Description:</strong> {{ .Song.Description }}</p>
+          <p><strong>Average Score:</strong> {{ .Song.AverageScore }}</p>
+        </div>
+        <div class="reviews">
+          <h3>Received Reviews:</h3>
+          {{- range .ReceivedReviews }}
+          <div class="review">
+            <p><strong>From:</strong> {{ .From }}</p>
+            <p><strong>Rating:</strong> {{ .Rating }}</p>
+            <p><strong>Review:</strong> {{ .Review }}</p>
+          </div>
+          {{- end }}
+        </div>
+      </div>
+      {{- end }}
+    </div>
+    <footer>
+      <p>Updated at {{timeNow -}}</p>
+    </footer>
+  </body>
+</html>
