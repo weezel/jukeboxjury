@@ -19,6 +19,7 @@ type Message struct {
 	Text       string
 	PlayerName string
 	FromID     int64
+	ChatID     int64
 }
 
 func (m Message) IsEmpty() bool {

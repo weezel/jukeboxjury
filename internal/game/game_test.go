@@ -55,67 +55,76 @@ func TestGamePlayWith3Panelists(t *testing.T) {
 	updates := []tgbotapi.Message{
 		// Start game
 		{
-			Chat: &tgbotapi.Chat{ID: 555}, // Game starter has "super powers", so this is needed
+			Chat: &tgbotapi.Chat{ID: 1},
 			From: panelistSantana,
 			Text: JukeboxJuryPrefix + " " + CommandStart,
 		},
 		// Join into the game
-		{From: panelistPjotr, Text: JukeboxJuryPrefix + " " + CommandJoin},
-		{From: panelistJesus, Text: JukeboxJuryPrefix + " " + CommandJoin},
+		{
+			Chat: &tgbotapi.Chat{ID: 3},
+			From: panelistPjotr,
+			Text: JukeboxJuryPrefix + " " + CommandJoin,
+		},
+		{
+			Chat: &tgbotapi.Chat{ID: 2},
+			From: panelistJesus,
+			Text: JukeboxJuryPrefix + " " + CommandJoin,
+		},
 		// Continue to introduce songs
-		{From: panelistSantana, Text: JukeboxJuryPrefix + " " + CommandContinue},
+		{
+			Chat: &tgbotapi.Chat{ID: 1},
+			From: panelistSantana,
+			Text: JukeboxJuryPrefix + " " + CommandContinue,
+		},
 		// Introduce songs
 		{
+			Chat: &tgbotapi.Chat{ID: 1},
 			From: panelistSantana,
 			Text: fmt.Sprintf("%s %s My favourite song https://example.com/satan_you_rock",
 				JukeboxJuryPrefix, introduceCommand),
 		},
 		{
+			Chat: &tgbotapi.Chat{ID: 3},
 			From: panelistPjotr,
 			Text: fmt.Sprintf("%s %s I happen to like it https://example.com/pjotr",
 				JukeboxJuryPrefix, introduceCommand),
 		},
 		{
+			Chat: &tgbotapi.Chat{ID: 2},
 			From: panelistJesus,
 			Text: fmt.Sprintf("%s %s Hallelujah 🤘 https://example.com/hesus",
 				JukeboxJuryPrefix, introduceCommand),
 		},
 		// First song reviews, host Santana
 		{
+			Chat: &tgbotapi.Chat{ID: 2},
 			From: panelistJesus,
 			Text: fmt.Sprintf("%s %s Great song1 10/10", JukeboxJuryPrefix, reviewCommand),
 		},
-		// {
-		// 	From: panelistSantana,
-		// 	Text: fmt.Sprintf("%s %s Terrible song1 1/10", JukeboxJuryPrefix, reviewCommand),
-		// },
 		{
+			Chat: &tgbotapi.Chat{ID: 3},
 			From: panelistPjotr,
 			Text: fmt.Sprintf("%s %s Nice song such wow1 5/10", JukeboxJuryPrefix, reviewCommand),
 		},
 		// Second song reviews, host Pjotr
 		{
+			Chat: &tgbotapi.Chat{ID: 2},
 			From: panelistJesus,
 			Text: fmt.Sprintf("%s %s Great song2 10/10", JukeboxJuryPrefix, reviewCommand),
 		},
 		{
+			Chat: &tgbotapi.Chat{ID: 1},
 			From: panelistSantana,
 			Text: fmt.Sprintf("%s %s Terrible song2 1/10", JukeboxJuryPrefix, reviewCommand),
 		},
-		// {
-		// 	From: panelistPjotr,
-		// 	Text: fmt.Sprintf("%s %s Nice song such wow2 5/10", JukeboxJuryPrefix, reviewCommand),
-		// },
 		// The third song review, host Jesus
-		// {
-		// 	From: panelistJesus,
-		// 	Text: fmt.Sprintf("%s %s Great song3 10/10", JukeboxJuryPrefix, reviewCommand),
-		// },
 		{
+			Chat: &tgbotapi.Chat{ID: 1},
 			From: panelistSantana,
 			Text: fmt.Sprintf("%s %s Terrible song3 1/10", JukeboxJuryPrefix, reviewCommand),
 		},
 		{
+			Chat: &tgbotapi.Chat{ID: 3},
 			From: panelistPjotr,
 			Text: fmt.Sprintf("%s %s Nice song such wow3 5/10", JukeboxJuryPrefix, reviewCommand),
 		},
@@ -125,7 +134,6 @@ func TestGamePlayWith3Panelists(t *testing.T) {
 	state := p.StartGame
 
 	for i, update := range updates {
-		// state = state(tgbotapi.Update{Message: &msg})
 		msg, err := ParseToMessage(tgbotapi.Update{Message: &update})
 		if err != nil {
 			t.Fatalf("Failed to parse %d %q: %#v", i, update.Text, err)
@@ -229,32 +237,44 @@ func TestGamePlayWith2Panelists(t *testing.T) {
 	updates := []tgbotapi.Message{
 		// Start game
 		{
-			Chat: &tgbotapi.Chat{ID: 555}, // Game starter has "super powers", so this is needed
+			Chat: &tgbotapi.Chat{ID: 1},
 			From: panelistSantana,
 			Text: JukeboxJuryPrefix + " " + CommandStart,
 		},
 		// Join into the game
-		{From: panelistJesus, Text: JukeboxJuryPrefix + " " + CommandJoin},
+		{
+			Chat: &tgbotapi.Chat{ID: 2},
+			From: panelistJesus,
+			Text: JukeboxJuryPrefix + " " + CommandJoin,
+		},
 		// Continue to introduce songs
-		{From: panelistSantana, Text: JukeboxJuryPrefix + " " + CommandContinue},
+		{
+			Chat: &tgbotapi.Chat{ID: 1},
+			From: panelistSantana,
+			Text: JukeboxJuryPrefix + " " + CommandContinue,
+		},
 		// Introduce songs
 		{
+			Chat: &tgbotapi.Chat{ID: 1},
 			From: panelistSantana,
 			Text: fmt.Sprintf("%s %s My favourite song https://example.com/satan_you_rock",
 				JukeboxJuryPrefix, introduceCommand),
 		},
 		{
+			Chat: &tgbotapi.Chat{ID: 2},
 			From: panelistJesus,
 			Text: fmt.Sprintf("%s %s Hallelujah 🤘 https://example.com/hesus",
 				JukeboxJuryPrefix, introduceCommand),
 		},
 		// First song review, host Santana
 		{
+			Chat: &tgbotapi.Chat{ID: 2},
 			From: panelistJesus,
 			Text: fmt.Sprintf("%s %s Great song1 10/10", JukeboxJuryPrefix, reviewCommand),
 		},
 		// The second song review, host Jesus
 		{
+			Chat: &tgbotapi.Chat{ID: 1},
 			From: panelistSantana,
 			Text: fmt.Sprintf("%s %s Terrible song1 1/10", JukeboxJuryPrefix, reviewCommand),
 		},
@@ -348,12 +368,14 @@ func TestNewMessage(t *testing.T) {
 			args: args{
 				u: tgbotapi.Update{
 					Message: &tgbotapi.Message{
+						Chat: &tgbotapi.Chat{ID: 1},
 						Text: "levyraati liity",
 						From: &tgbotapi.User{UserName: "User1"},
 					},
 				},
 			},
 			want: Message{
+				ChatID:     1,
 				Command:    "liity",
 				Text:       "",
 				PlayerName: "User1",
@@ -365,12 +387,14 @@ func TestNewMessage(t *testing.T) {
 			args: args{
 				u: tgbotapi.Update{
 					Message: &tgbotapi.Message{
+						Chat: &tgbotapi.Chat{ID: 2},
 						Text: "levyraati liity asdfasdf",
 						From: &tgbotapi.User{UserName: "User1"},
 					},
 				},
 			},
 			want: Message{
+				ChatID:     2,
 				Command:    "liity",
 				Text:       "asdfasdf",
 				PlayerName: "User1",
@@ -382,12 +406,14 @@ func TestNewMessage(t *testing.T) {
 			args: args{
 				u: tgbotapi.Update{
 					Message: &tgbotapi.Message{
+						Chat: &tgbotapi.Chat{ID: 3},
 						Text: "levyraati liity asdfasdf 1234",
 						From: &tgbotapi.User{UserName: "User1"},
 					},
 				},
 			},
 			want: Message{
+				ChatID:     3,
 				Command:    "liity",
 				Text:       "asdfasdf 1234",
 				PlayerName: "User1",
@@ -400,6 +426,7 @@ func TestNewMessage(t *testing.T) {
 				u: tgbotapi.Update{
 					Message: &tgbotapi.Message{
 						Text: "levyraati",
+						Chat: &tgbotapi.Chat{ID: 4},
 						From: &tgbotapi.User{UserName: "User1"},
 					},
 				},
@@ -412,6 +439,7 @@ func TestNewMessage(t *testing.T) {
 			args: args{
 				u: tgbotapi.Update{
 					Message: &tgbotapi.Message{
+						Chat: &tgbotapi.Chat{ID: 5},
 						Text: "do something",
 						From: &tgbotapi.User{UserName: "User1"},
 					},

@@ -87,7 +87,7 @@ func (p *Play) StartGame(msg Message) StateFunc {
 		p.gameActive = true
 		p.StartedAt = time.Now().Local()
 		p.gameStarterUID = msg.FromID
-		p.sendMessage(
+		p.sendMessageToChannel(
 			fmt.Sprintf("User %s started a new game, join by using command: %s %s",
 				msg.PlayerName, JukeboxJuryPrefix, CommandJoin,
 			),
@@ -109,13 +109,14 @@ func (p *Play) WaitPanelistsToJoin(msg Message) StateFunc {
 	switch msg.Command {
 	case CommandJoin:
 		if ok := p.addPanelist(msg); !ok {
-			p.sendMessage("You are already in the game")
+			p.sendMessageToPanelist(msg.ChatID, "You are already in the game")
 		} else {
-			p.sendMessage(fmt.Sprintf("User %s joined the game", msg.PlayerName))
+			p.sendMessageToChannel(fmt.Sprintf("User %s joined the game", msg.PlayerName))
 		}
 	case CommandContinue:
+		// TODO Add higher bit for the user who started the game?
 		logger.Logger.Info().Msg("Panelists are ready, continuing")
-		p.sendMessage(fmt.Sprintf("User %s wants to proceed, continuing...", msg.PlayerName))
+		p.sendMessageToChannel(fmt.Sprintf("User %s wants to proceed, continuing...", msg.PlayerName))
 		return p.AddSong
 	}
 
@@ -129,30 +130,31 @@ func (p *Play) AddSong(msg Message) StateFunc {
 
 	if !songCommandMatcher.MatchString(msg.Command) {
 		logger.Logger.Warn().Interface("msg", msg).Msg("Not a command")
-		p.sendMessage("Aww cute, but it's a wrong command.")
+		p.sendMessageToPanelist(msg.ChatID, "Aww cute, but it's a wrong command.")
 		return p.AddSong
 	}
 
 	if err := p.addSong(msg); err != nil {
 		var songErr SongError
 		if errors.As(err, &songErr) {
-			p.sendMessage(songErr.ErrForUser)
+			p.sendMessageToPanelist(msg.ChatID, songErr.ErrForUser)
 		} else {
 			logger.Logger.Error().Err(err).Interface("msg", msg).Msg("Couldn't add song")
+			p.sendMessageToPanelist(msg.ChatID, "Me confused. Que pasa¿")
 		}
 		return p.AddSong
 	}
 	logger.Logger.Info().
 		Interface("msg", msg).
 		Msgf("Panelist %s with ID %d added a song", msg.PlayerName, msg.FromID)
-	p.sendMessage(fmt.Sprintf("Panelist %s added a song", msg.PlayerName))
+	p.sendMessageToChannel(fmt.Sprintf("Panelist %s added a song", msg.PlayerName))
 
 	if !p.allSongsSubmitted {
 		return p.AddSong
 	}
 
 	logger.Logger.Info().Msg("All songs submitted, continuing")
-	p.sendMessage("All songs submitted, continuing...")
+	p.sendMessageToChannel("All songs submitted, continuing...")
 
 	p.shuffleHost()
 
@@ -177,7 +179,7 @@ func (p *Play) IntroduceSong(_ Message) StateFunc {
 			Str("hosts_song", p.host.Song.String()).
 			Msg("Current presenter")
 
-		p.sendMessage(
+		p.sendMessageToChannel(
 			fmt.Sprintf("The next song comes from the panelist %s and the song's details: %s",
 				panelist.Name, panelist.Song.String(),
 			),
@@ -195,7 +197,7 @@ func (p *Play) WaitForReviews(msg Message) StateFunc {
 
 	if !reviewCommandMatcher.MatchString(msg.Command) {
 		logger.Logger.Warn().Interface("msg", msg).Msg("Not a command")
-		p.sendMessage("Aww cute, but it's a wrong command.")
+		p.sendMessageToChannel("Aww cute, but it's a wrong command.")
 		return p.WaitForReviews
 	}
 
@@ -204,9 +206,7 @@ func (p *Play) WaitForReviews(msg Message) StateFunc {
 			msg.PlayerName,
 			msg.FromID,
 		)
-		p.sendMessage(
-			fmt.Sprintf("Panelist %s was naughty and tried to review his/hers own song", msg.PlayerName),
-		)
+		p.sendMessageToPanelist(msg.ChatID, "You naughty. It's not possible to review own songs")
 		return p.WaitForReviews
 	}
 
@@ -239,14 +239,14 @@ func (p *Play) WaitForReviews(msg Message) StateFunc {
 		Str("host_name", p.host.Name).
 		Interface("received_reviews", p.host.ReceivedReviews).
 		Msgf("Panelist %s reviewed the song %s", msg.PlayerName, p.host.Song.URL)
-	p.sendMessage(fmt.Sprintf("Panelist %s reviewed the song", msg.PlayerName))
+	p.sendMessageToChannel(fmt.Sprintf("Panelist %s reviewed the song", msg.PlayerName))
 
 	if !p.isCurrentRoundReviewsDone() {
 		return p.WaitForReviews
 	}
 
 	logger.Logger.Info().Msgf("Everybody has reviewed the song %s", p.host.Song.URL)
-	p.sendMessage("Everybody has reviewed the song, continuing...")
+	p.sendMessageToChannel("Everybody has reviewed the song, continuing...")
 
 	return p.RevealReviews(msg) // Immediate transition
 }
@@ -262,7 +262,7 @@ func (p *Play) RevealReviews(_ Message) StateFunc {
 		}
 
 		review := fmt.Sprintf("%s wrote: %s. The song rating was: %d/10", r.From, r.Review, r.Rating)
-		p.sendMessage(review)
+		p.sendMessageToChannel(review)
 	}
 
 	p.countSongAverageScore()
@@ -270,7 +270,7 @@ func (p *Play) RevealReviews(_ Message) StateFunc {
 		p.host.Song.URL,
 		p.host.Song.AverageScore,
 	)
-	p.sendMessage(finalScore)
+	p.sendMessageToChannel(finalScore)
 
 	lastPanelist := p.Panelists[len(p.Panelists)-1]
 	if lastPanelist.uid != p.host.uid {
@@ -293,7 +293,7 @@ func fileExists(path string) bool {
 }
 
 func (p *Play) StopGame(_ Message) StateFunc {
-	p.sendMessage("State: Ending the game")
+	p.sendMessageToChannel("State: Ending the game")
 
 	logger.Logger.Info().
 		Interface("output", p.Panelists).
@@ -310,7 +310,7 @@ func (p *Play) StopGame(_ Message) StateFunc {
 				Err(err).
 				Str("filename", fpath).
 				Msg("Couldn't write results into the file")
-			p.sendMessage("Failed to write into the results file. Stopping anyway.")
+			p.sendMessageToChannel("Failed to write into the results file. Stopping anyway.")
 			proceedToRender = false
 		}
 		defer fout.Close()
@@ -318,13 +318,13 @@ func (p *Play) StopGame(_ Message) StateFunc {
 		if proceedToRender {
 			if err = renderResults(*p, fout); err != nil {
 				logger.Logger.Error().Err(err).Msg("Rendering the results failed")
-				p.sendMessage("Failed to render the results")
+				p.sendMessageToChannel("Failed to render the results")
 			}
 		}
 	} else {
 		if err := renderResults(*p, os.Stdout); err != nil {
 			logger.Logger.Error().Err(err).Msg("Rendering the results failed")
-			p.sendMessage("Failed to render the results")
+			p.sendMessageToChannel("Failed to render the results")
 		}
 	}
 
@@ -335,7 +335,7 @@ func (p *Play) StopGame(_ Message) StateFunc {
 			winner = panelist
 		}
 	}
-	p.sendMessage(
+	p.sendMessageToChannel(
 		fmt.Sprintf("Game has ended. The winner song came from %s and was %s with %.2f average score",
 			winner.Name,
 			winner.Song.URL,
@@ -454,12 +454,22 @@ func (p *Play) shuffleHost() {
 	})
 }
 
-// sendMessage sends text parameter to Telegram and logs failed sends.
-func (p *Play) sendMessage(text string) {
+// sendMessageToChannel sends text parameter to Telegram channel and logs failed sends.
+func (p *Play) sendMessageToChannel(text string) {
 	msg := tgbotapi.NewMessage(p.chatID, text)
 	_, err := p.bot.Send(msg)
 	if err != nil {
-		logger.Logger.Error().Err(err).Str("payload", text).Msg("Error sending message")
+		logger.Logger.Error().Err(err).Str("payload", text).Msg("Error sending channel message")
+		return
+	}
+}
+
+// sendMessageToPanelist sends text parameter to panelist and logs failed sends.
+func (p *Play) sendMessageToPanelist(chatID int64, text string) {
+	msg := tgbotapi.NewMessage(chatID, text)
+	_, err := p.bot.Send(msg)
+	if err != nil {
+		logger.Logger.Error().Err(err).Str("payload", text).Msg("Error sending user message")
 		return
 	}
 }
@@ -516,6 +526,7 @@ func ParseToMessage(u tgbotapi.Update) (Message, error) {
 	}
 
 	msg.FromID = u.Message.From.ID
+	msg.ChatID = u.Message.Chat.ID
 
 	return msg, nil
 }
