@@ -370,7 +370,7 @@ func (p *Play) StopGame(_ Message) StateFunc {
 }
 
 func (p *Play) createResultsFile() (*os.File, string, error) {
-	fname := fmt.Sprintf("jukebox_jury_results_%s.html", time.Now().Local().Format("2006-01-02T15:04:05"))
+	fname := fmt.Sprintf("jukebox_jury_results_%s.html", time.Now().Local().Format("2006-01-02T150405"))
 	fpath := filepath.Join(*p.resultsDirectory, fname)
 	if fileExists(fpath) {
 		return nil, "", fmt.Errorf("file %q already exists", fpath)
