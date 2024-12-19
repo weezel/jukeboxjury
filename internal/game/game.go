@@ -46,12 +46,19 @@ func WithOutputDirectory(fpath string) PlayOption {
 	}
 }
 
+func WithResultsURL(resultsURL string) PlayOption {
+	return func(p *Play) {
+		p.resultsURL = &resultsURL
+	}
+}
+
 // Play implements JukeboxServicer interface
 type Play struct {
 	host              *Panelist
 	StartedAt         time.Time
 	bot               telegram.Boter
 	resultsDirectory  *string
+	resultsURL        *string
 	Panelists         []*Panelist
 	gameStarterUID    int64
 	chatID            int64
@@ -60,10 +67,18 @@ type Play struct {
 }
 
 func New(bot telegram.Boter, chatID int64, opts ...PlayOption) *Play {
+	resultsURL := "http://127.0.0.1"
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		logger.Logger.Error().Err(err).Msg("Failed to get home directory, fallback to /tmp")
+		homeDir = "/tmp"
+	}
 	g := &Play{
-		bot:       bot,
-		chatID:    chatID,
-		Panelists: []*Panelist{},
+		bot:              bot,
+		chatID:           chatID,
+		resultsDirectory: &homeDir,
+		resultsURL:       &resultsURL,
+		Panelists:        []*Panelist{},
 	}
 
 	// Override defaults with given options
@@ -300,27 +315,22 @@ func (p *Play) StopGame(_ Message) StateFunc {
 		Dur("duration", time.Since(p.StartedAt)).
 		Msg("Game results")
 
-	fname := fmt.Sprintf("jukebox_jury_results_%s.html", time.Now().Local().Format("2006-01-02T15:04:05"))
-	fpath := filepath.Join(*p.resultsDirectory, fname)
-	if p.resultsDirectory != nil && !fileExists(fpath) { //nolint:nestif // Not that complex?
-		proceedToRender := true
-		fout, err := os.Create(fpath)
+	if p.resultsDirectory != nil { //nolint:nestif // Not that complex?
+		fout, fname, err := p.createResultsFile()
 		if err != nil {
-			logger.Logger.Error().
-				Err(err).
-				Str("filename", fpath).
-				Msg("Couldn't write results into the file")
-			p.sendMessageToChannel("Failed to write into the results file. Stopping anyway.")
-			proceedToRender = false
-		}
-		defer fout.Close()
-
-		if proceedToRender {
+			logger.Logger.Error().Err(err).Msg("Failed to create results file")
+			p.sendMessageToChannel("Failed to create results file")
+		} else {
 			if err = renderResults(*p, fout); err != nil {
 				logger.Logger.Error().Err(err).Msg("Rendering the results failed")
 				p.sendMessageToChannel("Failed to render the results")
+			} else {
+				p.sendMessageToChannel(
+					fmt.Sprintf("Results are available in %s", filepath.Join(*p.resultsURL, fname)),
+				)
 			}
 		}
+		fout.Close()
 	} else {
 		if err := renderResults(*p, os.Stdout); err != nil {
 			logger.Logger.Error().Err(err).Msg("Rendering the results failed")
@@ -346,6 +356,21 @@ func (p *Play) StopGame(_ Message) StateFunc {
 	p.gameActive = false
 
 	return nil
+}
+
+func (p *Play) createResultsFile() (*os.File, string, error) {
+	fname := fmt.Sprintf("jukebox_jury_results_%s.html", time.Now().Local().Format("2006-01-02T15:04:05"))
+	fpath := filepath.Join(*p.resultsDirectory, fname)
+	if fileExists(fpath) {
+		return nil, "", fmt.Errorf("file %q already exists", fpath)
+	}
+
+	fout, err := os.Create(fpath)
+	if err != nil {
+		return nil, "", fmt.Errorf("file %q creation: %w", fpath, err)
+	}
+
+	return fout, fname, nil
 }
 
 func (p *Play) countSongAverageScore() {
