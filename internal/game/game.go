@@ -132,6 +132,17 @@ func (p *Play) WaitPanelistsToJoin(msg Message) StateFunc {
 		// TODO Add higher bit for the user who started the game?
 		logger.Logger.Info().Msg("Panelists are ready, continuing")
 		p.sendMessageToChannel(fmt.Sprintf("User %s wants to proceed, continuing...", msg.PlayerName))
+		p.sendMessageToChannel(
+			fmt.Sprintf(
+				"Add song with the following command and format in private chat with the bot: %s "+
+					"description here https://link-as-last-item",
+				CommandPresent),
+		)
+		p.sendMessageToChannel(
+			fmt.Sprintf(
+				"Add review similar way (max score is 5, only integers): %s description here 5/5",
+				CommandReview),
+		)
 		return p.AddSong
 	}
 
