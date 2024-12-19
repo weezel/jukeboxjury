@@ -92,7 +92,7 @@
     </header>
 
     <div class="container">
-      {{- range . }}
+      {{- range .Panelists }}
       <div class="panelist">
         <h2>{{ .Name }}</h2>
         <div class="song">
@@ -117,6 +117,7 @@
       {{- end }}
     </div>
     <footer>
+      <p>Game took {{gameDuration .StartedAt -}}</p>
       <p>Updated at {{timeNow -}}</p>
     </footer>
   </body>

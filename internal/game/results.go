@@ -25,11 +25,14 @@ var funcMap = template.FuncMap{
 	"timeNow": func() string {
 		return time.Now().In(timeZone).Format("2006-01-02T15:04:05")
 	},
+	"gameDuration": func(started time.Time) string {
+		return time.Since(started).String()
+	},
 }
 
 var tmpl = template.Must(template.New("results").Funcs(funcMap).Parse(resultsTemplate))
 
-func renderResults(results []*Panelist, output io.Writer) error {
+func renderResults(results Play, output io.Writer) error {
 	if err := tmpl.Execute(output, results); err != nil {
 		return fmt.Errorf("rendering template: %w", err)
 	}
