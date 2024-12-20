@@ -87,14 +87,14 @@ func (p *Panelist) AddReview(reviewer *Panelist, review string) error {
 		return ReviewError{
 			Err: fmt.Errorf("parse rating from user=%s, review=%s, error: %w", reviewer.Name, review, err),
 			ErrForUser: "Did you forgot to give the points? " +
-				"Those should be in 10/10 format and as a last item.",
+				"Those should be in 0/10 format and as a last item.",
 		}
 	}
 	cleanedReview := strings.LastIndex(review, " ")
 	if cleanedReview == -1 {
 		return ReviewError{
 			Err:        fmt.Errorf("parse last space char from user %s, review %q", reviewer.Name, review),
-			ErrForUser: "Check that the scoring is last item and separated with a space: ... 5/10",
+			ErrForUser: "Check that the scoring is last item and separated with a space: ... 0/10",
 		}
 	}
 
@@ -118,6 +118,14 @@ func parseRating(review string) (int, error) {
 		return -1, errors.New("couldn't parse review points")
 	}
 	points := strings.Split(match, "/")
-	numPoints, _ := strconv.Atoi(points[0])
+	numPoints, err := strconv.Atoi(points[0])
+	if err != nil {
+		return -1, fmt.Errorf("failed to parse rating: %w", err)
+	}
+
+	if numPoints < 0 || numPoints > 10 {
+		return -1, fmt.Errorf("number was out of range: %d", numPoints)
+	}
+
 	return numPoints, nil
 }
