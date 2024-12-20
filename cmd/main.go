@@ -46,10 +46,11 @@ func main() {
 		logger.Logger.Fatal().Err(err).Msg("Invalid chat ID")
 	}
 
+	resultsDir := os.Getenv("RESULTS_DIRECTORY")
 	p := game.New(
 		tgramAPI,
 		chatID,
-		game.WithOutputDirectory(os.Getenv("RESULTS_DIRECTORY")),
+		game.WithOutputDirectory(&resultsDir),
 		game.WithResultsURL(os.Getenv("RESULTS_URL")),
 	)
 	state := p.Init

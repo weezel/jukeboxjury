@@ -130,7 +130,7 @@ func TestGamePlayWith3Panelists(t *testing.T) {
 		},
 	}
 
-	p := New(&mockBot, 12345678)
+	p := New(&mockBot, 12345678, WithOutputDirectory(nil))
 	state := p.StartGame
 
 	for i, update := range updates {
@@ -160,6 +160,9 @@ func TestGamePlayWith3Panelists(t *testing.T) {
 		"User Pjotr joined the game",
 		"User Jesus joined the game",
 		"User Santana wants to proceed, continuing...",
+		"Add song with the following command and format in private chat with the bot: (esitä|esitys) " +
+			"description here https://link-as-last-item",
+		"Add review similar way (max score is 5, only integers): (arvio|arvioi|arvostele) description here 5/5",
 		"Panelist Santana added a song",
 		"Panelist Pjotr added a song",
 		"Panelist Jesus added a song",
@@ -280,7 +283,7 @@ func TestGamePlayWith2Panelists(t *testing.T) {
 		},
 	}
 
-	p := New(&mockBot, 123456789)
+	p := New(&mockBot, 123456789, WithOutputDirectory(nil))
 	state := p.StartGame
 
 	for i, update := range updates {
@@ -312,6 +315,9 @@ func TestGamePlayWith2Panelists(t *testing.T) {
 			JukeboxJuryPrefix, CommandJoin),
 		"User Jesus joined the game",
 		"User Santana wants to proceed, continuing...",
+		"Add song with the following command and format in private chat with the bot: (esitä|esitys) " +
+			"description here https://link-as-last-item",
+		"Add review similar way (max score is 5, only integers): (arvio|arvioi|arvostele) description here 5/5",
 		"Panelist Santana added a song",
 		"Panelist Jesus added a song",
 		"All songs submitted, continuing...",

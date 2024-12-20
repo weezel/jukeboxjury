@@ -40,9 +40,9 @@ var AllCommands = []string{
 
 type PlayOption func(*Play)
 
-func WithOutputDirectory(fpath string) PlayOption {
+func WithOutputDirectory(fpath *string) PlayOption {
 	return func(p *Play) {
-		p.resultsDirectory = &fpath
+		p.resultsDirectory = fpath
 	}
 }
 
