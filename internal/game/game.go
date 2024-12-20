@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 
@@ -325,6 +326,16 @@ func (p *Play) StopGame(_ Message) StateFunc {
 		Interface("output", p.Panelists).
 		Dur("duration", time.Since(p.StartedAt)).
 		Msg("Game results")
+
+	// Sort panelists by the highest scorer in descending order
+	slices.SortFunc(p.Panelists, func(a *Panelist, b *Panelist) int {
+		if a.Song.AverageScore < b.Song.AverageScore {
+			return 1
+		} else if a.Song.AverageScore > b.Song.AverageScore {
+			return -1
+		}
+		return 0
+	})
 
 	if p.resultsDirectory != nil { //nolint:nestif // Not that complex?
 		fout, fname, err := p.createResultsFile()
