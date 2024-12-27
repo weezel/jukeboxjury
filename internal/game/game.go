@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand/v2"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -48,8 +49,12 @@ func WithOutputDirectory(fpath *string) PlayOption {
 }
 
 func WithResultsURL(resultsURL string) PlayOption {
+	resURL, err := url.Parse(resultsURL)
+	if err != nil {
+		logger.Logger.Fatal().Err(err).Msgf("Failed to parse results URL %q", resultsURL)
+	}
 	return func(p *Play) {
-		p.resultsURL = &resultsURL
+		p.resultsURL = resURL
 	}
 }
 
@@ -59,7 +64,7 @@ type Play struct {
 	StartedAt         time.Time
 	bot               telegram.Boter
 	resultsDirectory  *string
-	resultsURL        *string
+	resultsURL        *url.URL
 	Panelists         []*Panelist
 	gameStarterUID    int64
 	chatID            int64
@@ -68,7 +73,7 @@ type Play struct {
 }
 
 func New(bot telegram.Boter, chatID int64, opts ...PlayOption) *Play {
-	resultsURL := "http://127.0.0.1"
+	resultsURL, _ := url.Parse("http://127.0.0.1")
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		logger.Logger.Error().Err(err).Msg("Failed to get home directory, fallback to /tmp")
@@ -78,7 +83,7 @@ func New(bot telegram.Boter, chatID int64, opts ...PlayOption) *Play {
 		bot:              bot,
 		chatID:           chatID,
 		resultsDirectory: &homeDir,
-		resultsURL:       &resultsURL,
+		resultsURL:       resultsURL,
 		Panelists:        []*Panelist{},
 	}
 
@@ -344,7 +349,9 @@ func (p *Play) StopGame(_ Message) StateFunc {
 				p.sendMessageToChannel("Failed to render the results")
 			} else {
 				p.sendMessageToChannel(
-					fmt.Sprintf("Results are available in %s", filepath.Join(*p.resultsURL, fname)),
+					fmt.Sprintf(
+						"Results are available in %s", p.resultsURL.JoinPath(fname).String(),
+					),
 				)
 			}
 		}
