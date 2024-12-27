@@ -62,9 +62,9 @@ func init() {
 		Caller().
 		Logger()
 
-		// if isInteractive() {
-	Logger = Logger.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	// }
+	if isInteractive() {
+		Logger = Logger.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	}
 
 	Logger.Debug().Msgf("Starting logger on level %s", Logger.GetLevel())
 }
