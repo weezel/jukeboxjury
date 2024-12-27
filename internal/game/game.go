@@ -136,14 +136,18 @@ func (p *Play) WaitPanelistsToJoin(msg Message) StateFunc {
 		p.sendMessageToChannel(fmt.Sprintf("User %s wants to proceed, continuing...", msg.PlayerName))
 		p.sendMessageToChannel(
 			fmt.Sprintf(
-				"Add song with the following command and format in private chat with the bot: %s "+
+				"Add song with the following command and format in private chat with the bot: %s %s "+
 					"description here https://link-as-last-item",
-				CommandPresent),
+				JukeboxJuryPrefix,
+				CommandPresent,
+			),
 		)
 		p.sendMessageToChannel(
 			fmt.Sprintf(
-				"Add review similar way (max score is 5, only integers): %s description here 5/5",
-				CommandReview),
+				"Add review similar way (max score is 10, only integers): %s %s description here 0/10",
+				JukeboxJuryPrefix,
+				CommandReview,
+			),
 		)
 		return p.AddSong
 	}
