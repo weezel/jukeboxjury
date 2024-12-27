@@ -372,6 +372,11 @@ func (p *Play) StopGame(_ Message) StateFunc {
 	)
 
 	p.gameActive = false
+	p.host = nil
+	p.StartedAt = time.Time{}
+	p.Panelists = []*Panelist{}
+	p.gameStarterUID = 0
+	p.allSongsSubmitted = false
 
 	return nil
 }
