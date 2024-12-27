@@ -53,7 +53,7 @@ func main() {
 		game.WithOutputDirectory(&resultsDir),
 		game.WithResultsURL(os.Getenv("RESULTS_URL")),
 	)
-	state := p.Init
+	state := p.StartGame
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 30
@@ -74,7 +74,7 @@ func main() {
 		state = state(msg)
 		if state == nil {
 			logger.Logger.Info().Msg("All good, getting back to the init state")
-			state = p.Init
+			state = p.StartGame
 			continue
 		}
 	}

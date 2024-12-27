@@ -91,10 +91,6 @@ func New(bot telegram.Boter, chatID int64, opts ...PlayOption) *Play {
 }
 
 // States
-func (p *Play) Init(_ Message) StateFunc {
-	return p.StartGame
-}
-
 func (p *Play) StartGame(msg Message) StateFunc {
 	logger.Logger.Debug().Msg("State: Game is starting")
 

@@ -4,7 +4,6 @@ type StateFunc func(msg Message) StateFunc
 
 // Jukebox service interface
 type JukeboxServicer interface {
-	Init(_ Message) StateFunc
 	StartGame(msg Message) StateFunc
 	WaitPanelistsToJoin(msg Message) StateFunc
 	WaitForReviews(msg Message) StateFunc
