@@ -198,6 +198,7 @@ func TestGamePlayWith3Panelists(t *testing.T) {
 		"State: Ending the game",
 		"Game has ended. The winner song came from Santana and was https://example.com/satan_you_rock " +
 			"with 7.50 average score",
+		"Ending the game",
 	}
 
 	if len(expectedMessages) != len(mockBot.receivedMessages) {
@@ -340,6 +341,7 @@ func TestGamePlayWith2Panelists(t *testing.T) {
 		"State: Ending the game",
 		"Game has ended. The winner song came from Santana and was https://example.com/satan_you_rock with " +
 			"10.00 average score",
+		"Ending the game",
 	}
 
 	if len(expectedMessages) != len(mockBot.receivedMessages) {

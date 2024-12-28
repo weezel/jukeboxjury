@@ -22,6 +22,7 @@ const JukeboxJuryPrefix = "levyraati"
 
 const (
 	CommandStart    = "aloita"
+	CommandStop     = "lopeta"
 	CommandContinue = "jatka"
 	CommandJoin     = "liity"
 	CommandPresent  = "(esitä|esitys)"
@@ -382,14 +383,21 @@ func (p *Play) StopGame(_ Message) StateFunc {
 		),
 	)
 
+	p.ClearGame()
+
+	return nil
+}
+
+// ClearGame should be called when the game is stopped so it
+// will set all the needed values back to their initial values.
+func (p *Play) ClearGame() {
+	p.sendMessageToChannel("Ending the game")
 	p.gameActive = false
 	p.host = nil
 	p.StartedAt = time.Time{}
 	p.Panelists = []*Panelist{}
 	p.gameStarterUID = 0
 	p.allSongsSubmitted = false
-
-	return nil
 }
 
 func (p *Play) createResultsFile() (*os.File, string, error) {

@@ -72,8 +72,9 @@ func main() {
 		}
 
 		state = state(msg)
-		if state == nil {
-			logger.Logger.Info().Msg("All good, getting back to the init state")
+		if state == nil || msg.Command == game.CommandStop {
+			p.ClearGame()
+			logger.Logger.Info().Msg("All good, getting back to the start state")
 			state = p.StartGame
 			continue
 		}
